@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Favoris - E-Shop</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2><i class="fas fa-shopping-cart"></i> E-Shop</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Accueil</a>
+                <a href="products.html" class="nav-link">Produits</a>
+                <a href="cart.html" class="nav-link">
+                    <i class="fas fa-shopping-cart"></i> 
+                    Panier <span id="cart-count" class="cart-badge">0</span>
+                </a>
+                <a href="wishlist.html" class="nav-link active">
+                    <i class="fas fa-heart"></i> Favoris
+                </a>
+                <div class="nav-auth" id="nav-auth">
+                    <a href="login.html" class="nav-link">Connexion</a>
+                    <a href="register.html" class="nav-link">Inscription</a>
+                </div>
+                <div class="nav-user" id="nav-user" style="display: none;">
+                    <span class="user-name" id="user-name"></span>
+                    <div class="dropdown">
+                        <button class="dropdown-btn"><i class="fas fa-user"></i></button>
+                        <div class="dropdown-content">
+                            <a href="profile.html">Mon Profil</a>
+                            <a href="orders.html">Mes Commandes</a>
+                            <a href="#" onclick="logout()">Déconnexion</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div style="max-width: 1200px; margin: 2rem auto; padding: 0 2rem;">
+            <h1><i class="fas fa-heart"></i> Mes Favoris</h1>
+            
+            <div id="wishlist-content">
+                <!-- Le contenu de la wishlist sera chargé dynamiquement -->
+            </div>
+
+            <div id="empty-wishlist" class="empty-cart" style="display: none;">
+                <i class="fas fa-heart"></i>
+                <h2>Votre liste de favoris est vide</h2>
+                <p>Découvrez nos produits et ajoutez-les à vos favoris</p>
+                <a href="products.html" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag"></i> Voir les produits
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>À propos</h3>
+                <p>E-Shop, votre boutique en ligne de confiance depuis 2023.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p><i class="fas fa-phone"></i> 01 23 45 67 89</p>
+                <p><i class="fas fa-envelope"></i> contact@eshop.fr</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // JavaScript pour la wishlist
+        let wishlistItems = [];
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!auth.requireAuth()) return;
+            await loadWishlist();
+        });
+
+        async function loadWishlist() {
+            const wishlistContent = document.getElementById('wishlist-content');
+            const emptyWishlist = document.getElementById('empty-wishlist');
+            
+            Utils.showLoading(wishlistContent);
+            
+            try {
+                const user = auth.getCurrentUser();
+                wishlistItems = await api.getWishlist(user.id);
+                
+                if (wishlistItems.length === 0) {
+                    wishlistContent.style.display = 'none';
+                    emptyWishlist.style.display = 'block';
+                } else {
+                    emptyWishlist.style.display = 'none';
+                    displayWishlistItems();
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement de la wishlist:', error);
+                wishlistContent.innerHTML = '<p>Erreur lors du chargement des favoris</p>';
+            }
+        }
+
+        function displayWishlistItems() {
+            const wishlistContent = document.getElementById('wishlist-content');
+            wishlistContent.innerHTML = '';
+            wishlistContent.style.display = 'block';
+            
+            const grid = document.createElement('div');
+            grid.className = 'product-grid';
+            
+            wishlistItems.forEach(item => {
+                const productCard = createWishlistCard(item);
+                grid.appendChild(productCard);
+            });
+            
+            wishlistContent.appendChild(grid);
+        }
+
+        function createWishlistCard(item) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <div class="product-image">
+                    ${item.image_url ? 
+                        `<img src="${item.image_url}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;">` :
+                        `<i class="fas fa-image"></i>`
+                    }
+                </div>
+                <div class="product-info">
+                    <div class="product-name">${item.name}</div>
+                    <div class="product-price">${Utils.formatPrice(item.price)}</div>
+                    <p style="color: #666; font-size: 0.9rem; margin: 0.5rem 0;">${item.description.substring(0, 100)}...</p>
+                    <div class="product-actions">
+                        <button class="btn btn-primary" onclick="addToCart(${item.product_id})">
+                            <i class="fas fa-shopping-cart"></i> Ajouter au panier
+                        </button>
+                        <button class="btn btn-secondary" onclick="removeFromWishlist(${item.id})">
+                            <i class="fas fa-times"></i> Supprimer
+                        </button>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        async function removeFromWishlist(itemId) {
+            if (!confirm('Supprimer ce produit de vos favoris ?')) return;
+            
+            try {
+                // Simulation de suppression (dans un vrai système, il faudrait une API pour supprimer)
+                wishlistItems = wishlistItems.filter(item => item.id !== itemId);
+                
+                if (wishlistItems.length === 0) {
+                    document.getElementById('wishlist-content').style.display = 'none';
+                    document.getElementById('empty-wishlist').style.display = 'block';
+                } else {
+                    displayWishlistItems();
+                }
+                
+                Utils.showAlert('Produit supprimé des favoris', 'success');
+                
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                Utils.showAlert('Erreur lors de la suppression', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
