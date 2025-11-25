@@ -2,6 +2,26 @@ const express = require('express');
 const { executeQuery } = require('../config/database');
 const router = express.Router();
 
+// Récupérer toutes les catégories avec le nombre de produits
+router.get('/categories/all', async (req, res) => {
+  try {
+    const query = `
+      SELECT c.id, c.name, c.description,
+             COUNT(p.id) as product_count
+      FROM categories c
+      LEFT JOIN products p ON c.id = p.category_id
+      GROUP BY c.id, c.name, c.description
+      ORDER BY c.name ASC
+    `;
+    
+    const categories = await executeQuery(query);
+    res.json(categories);
+  } catch (error) {
+    console.error('Erreur récupération catégories:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Récupérer tous les produits avec requête lourde non optimisée
 router.get('/', async (req, res) => {
   try {
