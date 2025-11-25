@@ -173,3 +173,61 @@ async function addToWishlist(productId) {
         Utils.showAlert('Erreur lors de l\'ajout aux favoris', 'error');
     }
 }
+
+// Categories Slider Controls
+let isPaused = false;
+let currentSpeed = 'normal';
+
+function changeSpeed(speed) {
+    const track = document.getElementById('categories-track');
+    const dots = document.querySelectorAll('.speed-dot');
+    
+    // Remove all speed classes
+    track.classList.remove('fast', 'slow');
+    
+    // Remove active class from all dots
+    dots.forEach(dot => dot.classList.remove('active'));
+    
+    // Add appropriate class and activate dot
+    switch(speed) {
+        case 'slow':
+            track.classList.add('slow');
+            dots[0].classList.add('active');
+            break;
+        case 'fast':
+            track.classList.add('fast');
+            dots[2].classList.add('active');
+            break;
+        default:
+            dots[1].classList.add('active');
+    }
+    
+    currentSpeed = speed;
+}
+
+function toggleAnimation() {
+    const track = document.getElementById('categories-track');
+    const pauseIcon = document.getElementById('pauseIcon');
+    
+    if (isPaused) {
+        track.style.animationPlayState = 'running';
+        pauseIcon.className = 'fas fa-pause';
+        isPaused = false;
+    } else {
+        track.style.animationPlayState = 'paused';
+        pauseIcon.className = 'fas fa-play';
+        isPaused = true;
+    }
+}
+
+// Auto-pause on mobile when user interacts
+if (window.innerWidth <= 768) {
+    const categoriesSlider = document.querySelector('.categories-slider');
+    if (categoriesSlider) {
+        categoriesSlider.addEventListener('touchstart', () => {
+            if (!isPaused) {
+                toggleAnimation();
+            }
+        });
+    }
+}

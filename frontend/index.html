@@ -65,13 +65,26 @@
             <div class="hero-content">
                 <h1>Bienvenue sur E-Shop</h1>
                 <p>Découvrez notre collection exceptionnelle de produits de qualité premium, sélectionnés avec soin pour vous offrir la meilleure expérience shopping</p>
-                <button class="cta-button hover-lift" onclick="window.location.href='products.html'">
+                
+                <!-- Barre de recherche intégrée dans le hero -->
+                <div class="hero-search">
+                    <div class="search-wrapper">
+                        <input type="text" id="hero-search-input" placeholder="Que recherchez-vous aujourd'hui ?">
+                        <button id="hero-search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- <button class="cta-button hover-lift" onclick="window.location.href='products.html'">
                     <i class="fas fa-arrow-right"></i>
                     Découvrir nos produits
-                </button>
+                </button> -->
             </div>
         </section>
 
+        <!-- Supprimer ou commenter l'ancienne section search -->
+        <!-- 
         <section class="search-section">
             <div class="search-container">
                 <div class="search-wrapper">
@@ -82,38 +95,122 @@
                 </div>
             </div>
         </section>
+        -->
 
         <section class="categories">
-            <h2>Explorez nos Catégories</h2>
-            <div class="category-grid" id="category-grid">
-                <!-- Catégories par défaut en attendant le chargement dynamique -->
-                <div class="category-card hover-lift">
-                    <div class="category-icon">
-                        <i class="fas fa-laptop"></i>
+            <div class="categories-container">
+                <h2>Explorez nos Catégories</h2>
+                
+                <div class="categories-slider">
+                    <div class="categories-track" id="categories-track">
+                        <!-- Première série de catégories -->
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-laptop"></i>
+                            </div>
+                            <h3>Électronique</h3>
+                            <p>Smartphones, ordinateurs, tablettes et accessoires high-tech</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-tshirt"></i>
+                            </div>
+                            <h3>Mode & Style</h3>
+                            <p>Vêtements tendance, chaussures et accessoires de mode</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <h3>Maison & Déco</h3>
+                            <p>Meubles, décoration et équipements pour votre intérieur</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <h3>Sport & Fitness</h3>
+                            <p>Équipements sportifs, fitness et outdoor</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <h3>Automobile</h3>
+                            <p>Pièces auto, accessoires et équipements véhicules</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <h3>Beauté & Santé</h3>
+                            <p>Cosmétiques, soins et produits de bien-être</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <h3>Bijoux & Montres</h3>
+                            <p>Bijoux précieux, montres et accessoires de luxe</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <h3>Bricolage</h3>
+                            <p>Outils, matériaux et équipements de bricolage</p>
+                        </div>
+                        
+                        <!-- Duplication pour effet de boucle continue -->
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-laptop"></i>
+                            </div>
+                            <h3>Électronique</h3>
+                            <p>Smartphones, ordinateurs, tablettes et accessoires high-tech</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-tshirt"></i>
+                            </div>
+                            <h3>Mode & Style</h3>
+                            <p>Vêtements tendance, chaussures et accessoires de mode</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <h3>Maison & Déco</h3>
+                            <p>Meubles, décoration et équipements pour votre intérieur</p>
+                        </div>
+                        <div class="category-card hover-lift">
+                            <div class="category-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <h3>Sport & Fitness</h3>
+                            <p>Équipements sportifs, fitness et outdoor</p>
+                        </div>
                     </div>
-                    <h3>Électronique</h3>
-                    <p>Smartphones, ordinateurs, tablettes et accessoires high-tech</p>
                 </div>
-                <div class="category-card hover-lift">
-                    <div class="category-icon">
-                        <i class="fas fa-tshirt"></i>
-                    </div>
-                    <h3>Mode & Style</h3>
-                    <p>Vêtements tendance, chaussures et accessoires de mode</p>
+                
+                <!-- Contrôles de navigation -->
+                <div class="categories-nav">
+                    <button class="nav-arrow" id="prevBtn" onclick="changeSpeed('slow')">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="nav-arrow" id="pauseBtn" onclick="toggleAnimation()">
+                        <i class="fas fa-pause" id="pauseIcon"></i>
+                    </button>
+                    <button class="nav-arrow" id="nextBtn" onclick="changeSpeed('fast')">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
-                <div class="category-card hover-lift">
-                    <div class="category-icon">
-                        <i class="fas fa-home"></i>
-                    </div>
-                    <h3>Maison & Déco</h3>
-                    <p>Meubles, décoration et équipements pour votre intérieur</p>
-                </div>
-                <div class="category-card hover-lift">
-                    <div class="category-icon">
-                        <i class="fas fa-dumbbell"></i>
-                    </div>
-                    <h3>Sport & Fitness</h3>
-                    <p>Équipements sportifs, fitness et outdoor</p>
+                
+                <!-- Indicateurs de vitesse -->
+                <div class="speed-indicators">
+                    <div class="speed-dot" onclick="changeSpeed('slow')" title="Lent"></div>
+                    <div class="speed-dot active" onclick="changeSpeed('normal')" title="Normal"></div>
+                    <div class="speed-dot" onclick="changeSpeed('fast')" title="Rapide"></div>
                 </div>
             </div>
         </section>

@@ -302,7 +302,8 @@ body {
 .hero {
     position: relative;
     background: var(--dark-gradient);
-    height: 100vh;
+    height: 60vh; /* Réduit de 100vh à 60vh */
+    min-height: 400px; /* Hauteur minimum pour éviter que ce soit trop petit */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -334,14 +335,14 @@ body {
 .hero-content {
     position: relative;
     z-index: 2;
-    max-width: 800px;
+    max-width: 700px; /* Réduit de 800px à 700px */
     padding: 0 var(--spacing-xl);
 }
 
 .hero-content h1 {
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(2rem, 4vw, 3.5rem); /* Réduit la taille maximale de 4rem à 3.5rem */
     font-weight: 800;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md); /* Réduit de var(--spacing-lg) à var(--spacing-md) */
     background: linear-gradient(135deg, #ffffff 0%, #a8edea 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -351,30 +352,73 @@ body {
 }
 
 .hero-content p {
-    font-size: 1.25rem;
-    margin-bottom: var(--spacing-2xl);
+    font-size: 1.1rem; /* Réduit de 1.25rem à 1.1rem */
+    margin-bottom: var(--spacing-lg); /* Réduit l'espacement pour faire place à la recherche */
     opacity: 0.9;
+    font-weight: 400;
+    max-width: 600px; /* Limite la largeur du texte */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Hero Search - Barre de recherche intégrée dans le hero */
+.hero-search {
+    max-width: 500px;
+    margin: 0 auto var(--spacing-xl) auto;
+    position: relative;
+}
+
+.hero-search .search-wrapper {
+    position: relative;
+    display: flex;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-2xl);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.hero-search .search-wrapper:focus-within {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border-color: var(--primary-color);
+    transform: translateY(-3px) scale(1.02);
+}
+
+#hero-search-input {
+    flex: 1;
+    padding: 1.2rem 1.5rem;
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+}
+
+#hero-search-input::placeholder {
+    color: var(--text-muted);
     font-weight: 400;
 }
 
-.cta-button {
-    background: var(--secondary-gradient);
+#hero-search-btn {
+    background: var(--primary-gradient);
     color: white;
     border: none;
-    padding: 1rem 2.5rem;
+    padding: 1.2rem 2rem;
+    cursor: pointer;
     font-size: 1.1rem;
     font-weight: 600;
-    border-radius: var(--radius-full);
-    cursor: pointer;
     transition: all var(--transition-normal);
-    text-transform: none;
-    letter-spacing: 0;
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
 }
 
-.cta-button::before {
+#hero-search-btn::before {
     content: '';
     position: absolute;
     top: 0;
@@ -385,13 +429,29 @@ body {
     transition: all 0.5s;
 }
 
-.cta-button:hover::before {
+#hero-search-btn:hover::before {
     left: 100%;
 }
 
-.cta-button:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: var(--shadow-2xl);
+#hero-search-btn:hover {
+    background: var(--accent-gradient);
+    transform: scale(1.05);
+}
+
+/* Animation pour la barre de recherche hero */
+@keyframes heroSearchFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.hero-search {
+    animation: heroSearchFadeIn 0.8s ease-out 0.3s both;
 }
 
 /* Search Section - Modern Floating Design */
@@ -455,11 +515,33 @@ body {
     background: var(--accent-gradient);
 }
 
-/* Categories - Modern Card Design */
+/* Categories - Modern Sliding Design with Right to Left Animation */
 .categories {
-    padding: var(--spacing-3xl) var(--spacing-xl);
+    padding: var(--spacing-3xl) 0;
+    max-width: 100%;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.categories::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:rgba(102,126,234,0.05)"/><stop offset="100%" style="stop-color:rgba(118,75,162,0.05)"/></linearGradient></defs><circle cx="100" cy="100" r="50" fill="url(%23grad)"/><circle cx="900" cy="300" r="80" fill="url(%23grad)"/><circle cx="300" cy="800" r="60" fill="url(%23grad)"/></svg>') center/cover;
+    pointer-events: none;
+}
+
+.categories-container {
     max-width: 1400px;
     margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+    position: relative;
+    z-index: 2;
 }
 
 .categories h2 {
@@ -472,27 +554,71 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    position: relative;
 }
 
-.category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+.categories h2::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: var(--accent-gradient);
+    border-radius: var(--radius-full);
+}
+
+/* Sliding Categories Container */
+.categories-slider {
+    position: relative;
+    overflow: hidden;
+    padding: var(--spacing-lg) 0;
+}
+
+.categories-track {
+    display: flex;
     gap: var(--spacing-xl);
+    animation: slideRightToLeft 40s linear infinite;
+    width: calc(100% + 400px); /* Extra width for seamless loop */
 }
 
+/* Pause animation on hover */
+.categories-slider:hover .categories-track {
+    animation-play-state: paused;
+}
+
+@keyframes slideRightToLeft {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Category Card - Icons Only Design */
 .category-card {
+    flex: 0 0 120px; /* Largeur réduite pour icons seulement */
+    height: 120px; /* Hauteur fixe carrée */
     background: var(--bg-primary);
     border-radius: var(--radius-2xl);
-    padding: var(--spacing-2xl);
-    text-align: center;
-    box-shadow: var(--shadow-md);
-    border: 1px solid rgba(102, 126, 234, 0.1);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(102, 126, 234, 0.15);
     transition: all var(--transition-normal);
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
 }
 
+/* Gradient Border Effect */
 .category-card::before {
     content: '';
     position: absolute;
@@ -504,16 +630,37 @@ body {
     opacity: 0;
     transition: all var(--transition-normal);
     z-index: 1;
+    border-radius: var(--radius-2xl);
 }
 
 .category-card:hover::before {
     opacity: 0.1;
 }
 
+/* Animated Border */
+.category-card::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--accent-gradient);
+    z-index: -1;
+    border-radius: var(--radius-2xl);
+    opacity: 0;
+    transition: all var(--transition-normal);
+}
+
+.category-card:hover::after {
+    opacity: 1;
+    animation: borderGlow 2s ease-in-out infinite alternate;
+}
+
 .category-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--primary-color);
+    transform: translateY(-15px) scale(1.1);
+    box-shadow: var(--shadow-2xl);
+    background: rgba(255, 255, 255, 1);
 }
 
 .category-card > * {
@@ -521,26 +668,218 @@ body {
     z-index: 2;
 }
 
+/* Modern Icon Container - Icons Only */
 .category-icon {
-    font-size: 3.5rem;
-    margin-bottom: var(--spacing-lg);
+    width: 60px;
+    height: 60px;
+    margin: 0;
     background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
 }
 
-.category-card h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: var(--spacing-md);
-    color: var(--text-primary);
+.category-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: all 0.6s;
 }
 
+.category-card:hover .category-icon::before {
+    left: 100%;
+}
+
+.category-card:hover .category-icon {
+    transform: rotate(15deg) scale(1.2);
+    background: var(--secondary-gradient);
+    border-radius: 50%;
+}
+
+/* Masquer le texte */
+.category-card h3,
 .category-card p {
-    color: var(--text-secondary);
-    font-weight: 500;
+    display: none;
 }
+
+/* Responsive Design for Icons Only Categories */
+@media (max-width: 768px) {
+    .category-card {
+        flex: 0 0 100px;
+        height: 100px;
+        padding: var(--spacing-md);
+    }
+    
+    .category-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-card {
+        flex: 0 0 80px;
+        height: 80px;
+        padding: var(--spacing-sm);
+    }
+    
+    .category-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .categories-track {
+        animation-duration: 20s; /* Plus rapide sur très petit écran */
+    }
+}
+
+/* Navigation Arrows for Manual Control */
+.categories-nav {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+.nav-arrow {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+}
+
+.nav-arrow:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-xl);
+    background: var(--accent-gradient);
+}
+
+.nav-arrow:active {
+    transform: scale(0.95);
+}
+
+/* Speed Control Indicators */
+.speed-indicators {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+.speed-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.3);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.speed-dot.active {
+    background: var(--primary-gradient);
+    transform: scale(1.3);
+}
+
+.speed-dot:hover {
+    background: var(--accent-gradient);
+    transform: scale(1.2);
+}
+
+/* Responsive Design for Categories */
+@media (max-width: 768px) {
+    .categories-track {
+        animation-duration: 30s; /* Faster on mobile */
+    }
+    
+    .category-card {
+        flex: 0 0 280px;
+        padding: var(--spacing-lg);
+    }
+    
+    .category-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+    
+    .category-card h3 {
+        font-size: 1.3rem;
+    }
+    
+    .categories-nav {
+        display: none; /* Hide navigation on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .category-card {
+        flex: 0 0 250px;
+    }
+    
+    .categories-track {
+        animation-duration: 25s;
+    }
+}
+
+/* Additional Animation Variants */
+.categories-track.fast {
+    animation-duration: 20s;
+}
+
+.categories-track.slow {
+    animation-duration: 60s;
+}
+
+.categories-track.reverse {
+    animation-direction: reverse;
+}
+
+/* Entrance Animation for Categories */
+@keyframes categoriesFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.categories {
+    animation: categoriesFadeInUp 0.8s ease-out;
+}
+
+/* Staggered Animation for Cards */
+.category-card:nth-child(1) { animation-delay: 0.1s; }
+.category-card:nth-child(2) { animation-delay: 0.2s; }
+.category-card:nth-child(3) { animation-delay: 0.3s; }
+.category-card:nth-child(4) { animation-delay: 0.4s; }
+.category-card:nth-child(5) { animation-delay: 0.5s; }
+.category-card:nth-child(6) { animation-delay: 0.6s; }
+.category-card:nth-child(7) { animation-delay: 0.7s; }
+.category-card:nth-child(8) { animation-delay: 0.8s; }
 
 /* Featured Products - Modern Grid */
 .featured-products {
