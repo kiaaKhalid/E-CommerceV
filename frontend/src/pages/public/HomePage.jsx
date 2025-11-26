@@ -249,9 +249,12 @@ const HomePage = () => {
           background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%)',
           position: 'relative',
           overflow: 'visible',
-          minHeight: { xs: 'auto', md: 'auto' },
-          pt: { xs: 4, md: 6 },
-          pb: { xs: 8, md: 10 },
+          minHeight: { xs: 'calc(100vh - 120px)', md: 'calc(100vh - 140px)' },
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          pt: { xs: 6, md: 8 },
+          pb: { xs: 10, md: 14 },
         }}
       >
         {/* Background Pattern */}
@@ -263,8 +266,8 @@ const HomePage = () => {
           }}
         />
         
-        <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
-          <Grid container spacing={3} alignItems="center">
+        <Container maxWidth={false} sx={{ position: 'relative', zIndex: 1, px: { xs: 3, md: 6, lg: 10 } }}>
+          <Grid container spacing={6} alignItems="center">
             <Grid item xs={12} md={6}>
               <Box sx={{ color: 'white', textAlign: { xs: 'center', md: 'left' } }}>
                 <Chip
@@ -273,18 +276,19 @@ const HomePage = () => {
                     backgroundColor: 'rgba(255,255,255,0.2)',
                     color: 'white',
                     fontWeight: 600,
-                    mb: 2,
+                    mb: 3,
                     backdropFilter: 'blur(10px)',
-                    fontSize: '0.75rem',
+                    fontSize: '0.95rem',
+                    py: 2.5,
                   }}
                 />
                 <Typography
                   variant="h1"
                   sx={{
                     fontWeight: 800,
-                    mb: 1.5,
-                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                    lineHeight: 1.1,
+                    mb: 3,
+                    fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem', lg: '5rem' },
+                    lineHeight: 1.05,
                   }}
                 >
                   Découvrez le
@@ -304,29 +308,31 @@ const HomePage = () => {
                 <Typography
                   variant="body1"
                   sx={{
-                    mb: 2.5,
+                    mb: 4,
                     opacity: 0.9,
                     fontWeight: 400,
-                    maxWidth: 450,
+                    maxWidth: 550,
                     mx: { xs: 'auto', md: 0 },
-                    fontSize: { xs: '0.9rem', md: '1rem' },
+                    fontSize: { xs: '1.1rem', md: '1.25rem', lg: '1.4rem' },
+                    lineHeight: 1.7,
                   }}
                 >
                   Des milliers de produits sélectionnés avec soin, livrés chez vous en un temps record.
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'center', md: 'flex-start' }, flexWrap: 'wrap', mb: 3 }}>
+                <Box sx={{ display: 'flex', gap: 3, justifyContent: { xs: 'center', md: 'flex-start' }, flexWrap: 'wrap', mb: 5 }}>
                   <Button
                     variant="contained"
-                    size="medium"
+                    size="large"
                     onClick={() => navigate('/products')}
                     endIcon={<ArrowForward />}
                     sx={{
                       background: 'white',
                       color: 'primary.main',
-                      px: 3,
-                      py: 1,
-                      fontSize: '0.9rem',
+                      px: 5,
+                      py: 1.8,
+                      fontSize: '1.1rem',
                       fontWeight: 700,
+                      borderRadius: 3,
                       '&:hover': {
                         background: 'rgba(255,255,255,0.9)',
                         transform: 'translateY(-2px)',
@@ -337,15 +343,19 @@ const HomePage = () => {
                   </Button>
                   <Button
                     variant="outlined"
-                    size="medium"
+                    size="large"
                     sx={{
                       borderColor: 'rgba(255,255,255,0.5)',
                       color: 'white',
-                      px: 3,
-                      py: 1,
+                      px: 5,
+                      py: 1.8,
+                      fontSize: '1.1rem',
+                      borderRadius: 3,
+                      borderWidth: 2,
                       '&:hover': {
                         borderColor: 'white',
                         backgroundColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 2,
                       },
                     }}
                   >
@@ -357,7 +367,7 @@ const HomePage = () => {
                 <Box
                   sx={{
                     display: 'flex',
-                    gap: { xs: 3, md: 4 },
+                    gap: { xs: 4, md: 6 },
                     justifyContent: { xs: 'center', md: 'flex-start' },
                   }}
                 >
@@ -367,10 +377,10 @@ const HomePage = () => {
                     { value: '4.9', label: 'Note moyenne' },
                   ].map((stat) => (
                     <Box key={stat.label} sx={{ textAlign: 'center' }}>
-                      <Typography variant="h5" sx={{ fontWeight: 800, fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
+                      <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '1.75rem', md: '2.25rem', lg: '2.5rem' } }}>
                         {stat.value}
                       </Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                      <Typography variant="body2" sx={{ opacity: 0.8, fontSize: { xs: '0.95rem', md: '1.1rem' } }}>
                         {stat.label}
                       </Typography>
                     </Box>
@@ -391,13 +401,13 @@ const HomePage = () => {
               >
                 <Box
                   component="img"
-                  src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=500"
+                  src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=600"
                   alt="Shopping"
                   sx={{
                     width: '100%',
-                    maxWidth: 380,
-                    borderRadius: 4,
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+                    maxWidth: 520,
+                    borderRadius: 5,
+                    boxShadow: '0 30px 60px rgba(0,0,0,0.3)',
                     transform: 'rotate(3deg)',
                   }}
                 />

@@ -181,7 +181,7 @@ const FilterSidebar = ({
       <Button
         variant="outlined"
         fullWidth
-        sx={{ mt: 'auto', pt: 3, borderRadius: 2 }}
+        sx={{ mt: 3, borderRadius: 2 }}
         onClick={() => {
           setCategory('');
           setPriceRange([0, 2000]);
@@ -265,15 +265,22 @@ const ProductsPage = () => {
   const startIndex = (currentPage - 1) * productsPerPage;
   const displayedProducts = sortedProducts.slice(startIndex, startIndex + productsPerPage);
 
-  // Product Card
+  // Product Card Component
   const ProductCard = ({ product }) => (
     <Card
+      component={RouterLink}
+      to={`/products/${product.id}`}
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: viewMode === 'list' ? 'row' : 'column',
         cursor: 'pointer',
+        textDecoration: 'none',
+        color: 'inherit',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: 4,
           '& .product-image': { transform: 'scale(1.05)' },
           '& .quick-actions': { opacity: 1 },
         },
@@ -284,25 +291,26 @@ const ProductsPage = () => {
           position: 'relative',
           overflow: 'hidden',
           width: viewMode === 'list' ? { xs: 120, sm: 200 } : '100%',
-          pt: viewMode === 'list' ? 0 : '100%',
           flexShrink: 0,
         }}
       >
-        <CardMedia
-          component="img"
-          image={getImageUrl(product.image_url)}
-          alt={product.name}
-          className="product-image"
-          sx={{
-            position: viewMode === 'list' ? 'relative' : 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: viewMode === 'list' ? { xs: 120, sm: 200 } : '100%',
-            objectFit: 'cover',
-            transition: 'transform 0.4s ease',
-          }}
-        />
+        <Box sx={{ pt: viewMode === 'list' ? 0 : '100%', position: 'relative', height: viewMode === 'list' ? 200 : 'auto' }}>
+          <CardMedia
+            component="img"
+            image={getImageUrl(product.image_url)}
+            alt={product.name}
+            className="product-image"
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'transform 0.4s ease',
+            }}
+          />
+        </Box>
         
         {/* Badges */}
         {product.stock < 10 && product.stock > 0 && (
@@ -314,6 +322,22 @@ const ProductsPage = () => {
               top: 8,
               left: 8,
               backgroundColor: '#F59E0B',
+              color: 'white',
+              fontWeight: 600,
+              fontSize: '0.65rem',
+            }}
+          />
+        )}
+        
+        {product.stock === 0 && (
+          <Chip
+            label="Rupture de stock"
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              backgroundColor: '#EF4444',
               color: 'white',
               fontWeight: 600,
               fontSize: '0.65rem',
@@ -353,7 +377,13 @@ const ProductsPage = () => {
         </Box>
       </Box>
 
-      <CardContent sx={{ flex: 1, p: { xs: 1.5, md: 2 }, display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ 
+        flex: 1, 
+        p: { xs: 1.5, md: 2 }, 
+        display: 'flex', 
+        flexDirection: 'column',
+        minHeight: viewMode === 'list' ? 'auto' : 180,
+      }}>
         <Typography
           variant="caption"
           sx={{ color: 'primary.main', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}
@@ -374,6 +404,7 @@ const ProductsPage = () => {
             WebkitLineClamp: viewMode === 'list' ? 1 : 2,
             WebkitBoxOrient: 'vertical',
             fontSize: { xs: '0.875rem', md: '1rem' },
+            height: viewMode === 'list' ? 'auto' : { xs: '2.3em', md: '2.6em' },
           }}
         >
           {product.name}
@@ -387,7 +418,6 @@ const ProductsPage = () => {
               mb: 1,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               display: { xs: 'none', sm: '-webkit-box' },
@@ -398,7 +428,7 @@ const ProductsPage = () => {
         )}
 
         {/* Rating */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1, height: 20 }}>
           {[...Array(5)].map((_, i) => (
             <Star key={i} sx={{ fontSize: 14, color: i < 4 ? '#F59E0B' : 'grey.300' }} />
           ))}
@@ -440,11 +470,11 @@ const ProductsPage = () => {
           <Typography color="text.primary" fontWeight={500}>Produits</Typography>
         </Breadcrumbs>
 
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', gap: 3 }}>
           {/* Desktop Sidebar */}
           {!isMobile && (
-            <Grid item md={3} lg={2.5}>
-              <Paper sx={{ position: 'sticky', top: 100, borderRadius: 3 }}>
+            <Box sx={{ width: 280, flexShrink: 0 }}>
+              <Paper sx={{ position: 'sticky', top: 90, borderRadius: 3 }}>
                 <FilterSidebar
                   isMobile={false}
                   searchQuery={searchQuery}
@@ -458,7 +488,7 @@ const ProductsPage = () => {
                   setSortBy={setSortBy}
                 />
               </Paper>
-            </Grid>
+            </Box>
           )}
 
           {/* Mobile Filter Drawer */}
@@ -483,8 +513,8 @@ const ProductsPage = () => {
             />
           </Drawer>
 
-          {/* Products Grid */}
-          <Grid item xs={12} md={9} lg={9.5}>
+          {/* Products Section */}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             {/* Header */}
             <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
@@ -527,13 +557,20 @@ const ProductsPage = () => {
               </Box>
             </Paper>
 
-            {/* Products */}
+            {/* Products Grid */}
             {loading ? (
               <Grid container spacing={2}>
                 {[...Array(8)].map((_, i) => (
-                  <Grid item xs={6} sm={viewMode === 'list' ? 12 : 4} md={viewMode === 'list' ? 12 : 4} lg={viewMode === 'list' ? 12 : 3} key={i}>
+                  <Grid item xs={6} sm={viewMode === 'list' ? 12 : 4} lg={viewMode === 'list' ? 12 : 3} key={i}>
                     <Card sx={{ display: 'flex', flexDirection: viewMode === 'list' ? 'row' : 'column' }}>
-                      <Skeleton variant="rectangular" sx={{ pt: viewMode === 'list' ? 0 : '100%', width: viewMode === 'list' ? 200 : '100%', height: viewMode === 'list' ? 200 : 'auto' }} />
+                      <Skeleton 
+                        variant="rectangular" 
+                        sx={{ 
+                          pt: viewMode === 'list' ? 0 : '100%', 
+                          width: viewMode === 'list' ? 200 : '100%', 
+                          height: viewMode === 'list' ? 200 : 'auto' 
+                        }} 
+                      />
                       <CardContent sx={{ flex: 1 }}>
                         <Skeleton width="40%" height={16} />
                         <Skeleton width="80%" height={24} sx={{ my: 1 }} />
@@ -560,7 +597,6 @@ const ProductsPage = () => {
                       item
                       xs={6}
                       sm={viewMode === 'list' ? 12 : 4}
-                      md={viewMode === 'list' ? 12 : 4}
                       lg={viewMode === 'list' ? 12 : 3}
                       key={product.id}
                     >
@@ -588,8 +624,8 @@ const ProductsPage = () => {
                 )}
               </>
             )}
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

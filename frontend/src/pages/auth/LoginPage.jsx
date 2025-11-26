@@ -240,7 +240,31 @@ const LoginPage = () => {
               onChange={handleChange}
               error={!!formErrors.email}
               helperText={formErrors.email}
-              sx={{ mb: 2.5 }}
+              sx={{ 
+                mb: 2.5,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'transparent',
+                  '& fieldset': {
+                    borderColor: 'divider',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'primary.main',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'primary.main',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: 'transparent',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  backgroundColor: 'transparent',
+                  '&:-webkit-autofill': {
+                    WebkitBoxShadow: '0 0 0 100px white inset',
+                    WebkitTextFillColor: 'inherit',
+                  },
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -259,7 +283,31 @@ const LoginPage = () => {
               onChange={handleChange}
               error={!!formErrors.password}
               helperText={formErrors.password}
-              sx={{ mb: 1.5 }}
+              sx={{ 
+                mb: 1.5,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'transparent',
+                  '& fieldset': {
+                    borderColor: 'divider',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'primary.main',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'primary.main',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: 'transparent',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  backgroundColor: 'transparent',
+                  '&:-webkit-autofill': {
+                    WebkitBoxShadow: '0 0 0 100px white inset',
+                    WebkitTextFillColor: 'inherit',
+                  },
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

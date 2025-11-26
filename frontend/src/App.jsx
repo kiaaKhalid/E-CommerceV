@@ -13,6 +13,8 @@ import Layout from './components/layout/Layout';
 // Pages
 import HomePage from './pages/public/HomePage';
 import ProductsPage from './pages/public/ProductsPage';
+import ProductDetailPage from './pages/public/ProductDetailPage';
+import CategoriesPage from './pages/public/CategoriesPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import CartPage from './pages/client/CartPage';
@@ -134,8 +136,6 @@ const theme = createTheme({
     '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
     '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
     '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-    '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-    '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -379,7 +379,8 @@ function App() {
                 <Route path="register" element={<RegisterPage />} />
                 <Route path="cart" element={<CartPage />} />
                 <Route path="products" element={<ProductsPage />} />
-                <Route path="categories" element={<div>Categories Page</div>} />
+                <Route path="products/:id" element={<ProductDetailPage />} />
+                <Route path="categories" element={<CategoriesPage />} />
                 <Route path="wishlist" element={<div>Wishlist Page</div>} />
                 <Route path="profile" element={<div>Profile Page</div>} />
                 <Route path="orders" element={<div>Orders Page</div>} />
