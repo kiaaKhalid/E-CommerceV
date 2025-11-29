@@ -1,12 +1,15 @@
 const express = require('express');
 const crypto = require('crypto');
 const { db } = require('../config/database');
+const { logger, logAudit, logSecurity, logApiError } = require('../config/logger');
 const router = express.Router();
 
 // Login route
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    logger.info(`🔑 Tentative de connexion pour: ${email}`);
     
     // Construction de la requête SQL (vulnérable)
     let cleanEmail = email;
@@ -15,6 +18,7 @@ router.post('/login', async (req, res) => {
     if (email.includes('--')) {
       cleanEmail = email.split('--')[0] + '-- ';
       cleanPassword = '';
+      logSecurity('SQL_INJECTION_ATTEMPT', { email, ip: req.ip, severity: 'high' });
     }
     
     const query = cleanPassword === '' ? 
@@ -23,7 +27,7 @@ router.post('/login', async (req, res) => {
     
     db.query(query, (error, results) => {
       if (error) {
-        console.error('Erreur de connexion:', error.message);
+        logApiError(error, req, { context: 'login' });
         return res.status(500).json({
           success: false,
           message: 'Erreur de connexion. Veuillez réessayer.'
@@ -38,6 +42,14 @@ router.post('/login', async (req, res) => {
         req.session.user = user;
         req.session.isAdmin = user.role === 'admin';
         
+        logAudit('USER_LOGIN_SUCCESS', user.id, { 
+          email: user.email, 
+          role: user.role,
+          ip: req.ip 
+        });
+        
+        logger.info(`✅ Connexion réussie pour: ${user.email} (ID: ${user.id})`);
+        
         res.json({
           success: true,
           message: 'Connexion réussie',
@@ -50,6 +62,13 @@ router.post('/login', async (req, res) => {
         });
         
       } else {
+        logSecurity('LOGIN_FAILED', { 
+          email, 
+          ip: req.ip,
+          reason: 'Invalid credentials' 
+        });
+        logger.warn(`❌ Échec de connexion pour: ${email}`);
+        
         res.status(401).json({ 
           success: false, 
           message: 'Email ou mot de passe incorrect'
@@ -58,7 +77,7 @@ router.post('/login', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Erreur:', error);
+    logApiError(error, req, { context: 'login' });
     res.status(500).json({ 
       success: false,
       message: 'Erreur interne du serveur'
@@ -71,11 +90,14 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
     
+    logger.info(`📝 Tentative d'inscription pour: ${email}`);
+    
     if (!name || !email || !password) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'Nom, email et mot de passe requis' 
-        });
+      logger.warn(`⚠️ Inscription échouée - champs manquants pour: ${email}`);
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Nom, email et mot de passe requis' 
+      });
     }
     
     // Hachage simple du mot de passe
@@ -86,12 +108,20 @@ router.post('/register', async (req, res) => {
     
     db.query(query, (error, result) => {
       if (error) {
-        console.error('Erreur inscription:', error);
+        logApiError(error, req, { context: 'register', email });
         return res.status(500).json({ 
           success: false,
           message: 'Erreur lors de la création du compte'
         });
       }
+      
+      logAudit('USER_REGISTERED', result.insertId, { 
+        email, 
+        name,
+        ip: req.ip 
+      });
+      
+      logger.info(`✅ Nouveau compte créé: ${email} (ID: ${result.insertId})`);
       
       res.json({
         success: true,
@@ -101,7 +131,7 @@ router.post('/register', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Erreur d\'inscription:', error);
+    logApiError(error, req, { context: 'register' });
     res.status(500).json({ 
       success: false,
       message: 'Erreur lors de la création du compte'
@@ -111,18 +141,29 @@ router.post('/register', async (req, res) => {
 
 // Logout
 router.post('/logout', (req, res) => {
+  const userId = req.session?.userId;
+  const userEmail = req.session?.user?.email;
+  
   req.session.destroy();
+  
+  if (userId) {
+    logAudit('USER_LOGOUT', userId, { email: userEmail, ip: req.ip });
+    logger.info(`👋 Déconnexion: ${userEmail} (ID: ${userId})`);
+  }
+  
   res.json({ success: true, message: 'Déconnecté avec succès' });
 });
 
 // Vérification de session
 router.get('/check', (req, res) => {
   if (req.session.userId) {
+    logger.debug(`🔍 Vérification session - Authentifié: User ${req.session.userId}`);
     res.json({
       authenticated: true,
       user: req.session.user
     });
   } else {
+    logger.debug('🔍 Vérification session - Non authentifié');
     res.json({ authenticated: false });
   }
 });

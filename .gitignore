@@ -1,0 +1,10 @@
+# Logs
+backend/logs/*.log
+backend/logs/*.gz
+
+# Node modules
+node_modules/
+
+# Environment
+.env
+.env.local

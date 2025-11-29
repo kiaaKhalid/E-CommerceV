@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/Users/kiaakhalidgmail/Project/e-commercV/backend/logs/.a51361afbfaf3a6a4db5918085450e4328a31fc4-audit.json",
+    "files": [
+        {
+            "date": 1764431589988,
+            "name": "/Users/kiaakhalidgmail/Project/e-commercV/backend/logs/access-2025-11-29.log",
+            "hash": "bf078219dfe2fc5f9d674eadae9e23b13d3ce414cf7d2b20d8774c0adaabd0a6"
+        }
+    ],
+    "hashType": "sha256"
+}

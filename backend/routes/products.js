@@ -1,10 +1,13 @@
 const express = require('express');
 const { executeQuery } = require('../config/database');
+const { logger, logDatabase, logApiError, logAudit } = require('../config/logger');
 const router = express.Router();
 
 // Récupérer toutes les catégories avec le nombre de produits
 router.get('/categories/all', async (req, res) => {
   try {
+    logger.debug('📂 Récupération de toutes les catégories');
+    
     const query = `
       SELECT c.id, c.name, c.description,
              COUNT(p.id) as product_count
@@ -15,9 +18,11 @@ router.get('/categories/all', async (req, res) => {
     `;
     
     const categories = await executeQuery(query);
+    logDatabase('SELECT', 'categories', { count: categories.length });
+    
     res.json(categories);
   } catch (error) {
-    console.error('Erreur récupération catégories:', error);
+    logApiError(error, req, { context: 'get_categories' });
     res.status(500).json({ error: error.message });
   }
 });
@@ -26,8 +31,8 @@ router.get('/categories/all', async (req, res) => {
 router.get('/search/:term', async (req, res) => {
   try {
     const { term } = req.params;
+    logger.info(`🔍 Recherche de produits: "${term}"`);
     
-    // Requête de recherche très lourde et vulnérable
     const query = `
       SELECT DISTINCT p.*, c.name as category_name,
              (SELECT COUNT(*) FROM cart_items ci WHERE ci.product_id = p.id) as in_carts,
@@ -44,34 +49,36 @@ router.get('/search/:term', async (req, res) => {
     `;
     
     const results = await executeQuery(query);
+    logDatabase('SEARCH', 'products', { term, resultsCount: results.length });
+    logger.info(`🔍 Recherche "${term}": ${results.length} résultats`);
+    
     res.json(results);
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'search_products', term: req.params.term });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ============ ROUTES PANIER (AVANT /:id) ============
+// ============ ROUTES PANIER ============
 
 // Ajouter au panier
 router.post('/cart/add', async (req, res) => {
   try {
     const { productId, quantity, userId } = req.body;
+    logger.info(`🛒 Ajout au panier - User: ${userId}, Produit: ${productId}, Qté: ${quantity}`);
     
-    // Insertion directe sans vérification
     const query = `INSERT INTO cart_items (user_id, product_id, quantity, created_at) 
                    VALUES (${userId}, ${productId}, ${quantity}, NOW())
                    ON DUPLICATE KEY UPDATE quantity = quantity + ${quantity}`;
     
     await executeQuery(query);
+    logDatabase('INSERT', 'cart_items', { userId, productId, quantity });
+    logAudit('CART_ADD', userId, { productId, quantity });
+    
     res.json({ success: true, message: 'Produit ajouté au panier' });
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'cart_add' });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -79,6 +86,7 @@ router.post('/cart/add', async (req, res) => {
 router.get('/cart/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    logger.debug(`🛒 Récupération panier - User: ${userId}`);
     
     const query = `
       SELECT ci.*, p.name, p.price, p.image_url, p.stock_quantity
@@ -88,12 +96,12 @@ router.get('/cart/:userId', async (req, res) => {
     `;
     
     const cartItems = await executeQuery(query);
+    logDatabase('SELECT', 'cart_items', { userId, itemsCount: cartItems.length });
+    
     res.json(cartItems);
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'cart_get', userId: req.params.userId });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -101,16 +109,16 @@ router.get('/cart/:userId', async (req, res) => {
 router.delete('/cart/:cartId', async (req, res) => {
   try {
     const { cartId } = req.params;
+    logger.info(`🛒 Suppression du panier - CartItem: ${cartId}`);
     
     const query = `DELETE FROM cart_items WHERE id = ${cartId}`;
     await executeQuery(query);
+    logDatabase('DELETE', 'cart_items', { cartId });
     
     res.json({ success: true, message: 'Produit retiré du panier' });
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'cart_delete', cartId: req.params.cartId });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -119,36 +127,38 @@ router.put('/cart/:cartId', async (req, res) => {
   try {
     const { cartId } = req.params;
     const { quantity } = req.body;
+    logger.info(`🛒 Mise à jour panier - CartItem: ${cartId}, Nouvelle Qté: ${quantity}`);
     
     const query = `UPDATE cart_items SET quantity = ${quantity} WHERE id = ${cartId}`;
     await executeQuery(query);
+    logDatabase('UPDATE', 'cart_items', { cartId, quantity });
     
     res.json({ success: true, message: 'Quantité mise à jour' });
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'cart_update', cartId: req.params.cartId });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ============ ROUTES WISHLIST (AVANT /:id) ============
+// ============ ROUTES WISHLIST ============
 
 // Ajouter à la wishlist
 router.post('/wishlist/add', async (req, res) => {
   try {
     const { productId, userId } = req.body;
+    logger.info(`❤️ Ajout wishlist - User: ${userId}, Produit: ${productId}`);
     
     const query = `INSERT INTO wishlist (user_id, product_id, created_at) 
                    VALUES (${userId}, ${productId}, NOW())`;
     
     await executeQuery(query);
+    logDatabase('INSERT', 'wishlist', { userId, productId });
+    logAudit('WISHLIST_ADD', userId, { productId });
+    
     res.json({ success: true, message: 'Produit ajouté à la wishlist' });
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'wishlist_add' });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -156,6 +166,7 @@ router.post('/wishlist/add', async (req, res) => {
 router.get('/wishlist/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    logger.debug(`❤️ Récupération wishlist - User: ${userId}`);
     
     const query = `
       SELECT w.*, p.name, p.price, p.image_url, p.description
@@ -165,12 +176,12 @@ router.get('/wishlist/:userId', async (req, res) => {
     `;
     
     const wishlistItems = await executeQuery(query);
+    logDatabase('SELECT', 'wishlist', { userId, itemsCount: wishlistItems.length });
+    
     res.json(wishlistItems);
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'wishlist_get', userId: req.params.userId });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -178,27 +189,27 @@ router.get('/wishlist/:userId', async (req, res) => {
 router.delete('/wishlist/:wishlistId', async (req, res) => {
   try {
     const { wishlistId } = req.params;
+    logger.info(`❤️ Suppression wishlist - Item: ${wishlistId}`);
     
     const query = `DELETE FROM wishlist WHERE id = ${wishlistId}`;
     await executeQuery(query);
+    logDatabase('DELETE', 'wishlist', { wishlistId });
     
     res.json({ success: true, message: 'Produit retiré de la wishlist' });
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'wishlist_delete', wishlistId: req.params.wishlistId });
+    res.status(500).json({ error: error.message });
   }
 });
 
 // ============ ROUTES PRODUITS ============
 
-// Récupérer tous les produits avec requête lourde non optimisée
+// Récupérer tous les produits
 router.get('/', async (req, res) => {
   try {
     const { category, search, limit, offset } = req.query;
+    logger.info('📦 Récupération des produits', { category, search, limit, offset });
     
-    // Requête complexe non optimisée avec JOIN multiples
     let query = `
       SELECT p.*, c.name as category_name, 
              (SELECT AVG(rating) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
@@ -229,39 +240,39 @@ router.get('/', async (req, res) => {
       query += ` OFFSET ${offset}`;
     }
     
-    console.log('Exécution de requête lourde:', query);
-    
     const products = await executeQuery(query);
+    logDatabase('SELECT', 'products', { 
+      filters: { category, search, limit, offset },
+      count: products.length 
+    });
+    logger.info(`📦 ${products.length} produits récupérés`);
+    
     res.json(products);
   } catch (error) {
-    console.error('Erreur récupération produits:', error);
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql,
-      stack: error.stack
-    });
+    logApiError(error, req, { context: 'products_list' });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Récupérer un produit par ID vulnérable (DOIT ÊTRE À LA FIN)
+// Récupérer un produit par ID
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    logger.debug(`📦 Récupération produit ID: ${id}`);
     
-    // Injection SQL directe
     const query = `SELECT * FROM products WHERE id = ${id}`;
     const product = await executeQuery(query);
     
     if (product.length > 0) {
+      logDatabase('SELECT', 'products', { productId: id, found: true });
       res.json(product[0]);
     } else {
+      logger.warn(`📦 Produit non trouvé: ${id}`);
       res.status(404).json({ message: 'Produit non trouvé' });
     }
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    logApiError(error, req, { context: 'product_get', productId: req.params.id });
+    res.status(500).json({ error: error.message });
   }
 });
 

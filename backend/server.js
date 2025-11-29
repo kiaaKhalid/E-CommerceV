@@ -4,6 +4,12 @@ const session = require('express-session');
 const cors = require('cors');
 const path = require('path');
 const { db } = require('./config/database');
+const { 
+  logger, 
+  requestLoggerMiddleware, 
+  errorLoggerMiddleware,
+  logSecurity 
+} = require('./config/logger');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const userRoutes = require('./routes/users');
@@ -13,49 +19,39 @@ const orderRoutes = require('./routes/orders');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware avec configurations non sécurisées
+// Middleware CORS
 app.use(cors({
   origin: '*',
   credentials: true
 }));
 
-app.use(bodyParser.json({ limit: '100mb' })); // Pas de limitation de taille
+app.use(bodyParser.json({ limit: '100mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
 
-// Configuration des sessions sans sécurité
+// Configuration des sessions
 app.use(session({
-  secret: 'simple-secret-key', // Clé secrète faible
+  secret: 'simple-secret-key',
   resave: false,
   saveUninitialized: true,
   cookie: { 
     secure: false,
-    maxAge: null // Pas d'expiration
+    maxAge: null
   }
 }));
 
-// Middleware de logging complet (sensible)
-app.use((req, res, next) => {
-  const logData = {
-    timestamp: new Date().toISOString(),
-    method: req.method,
-    url: req.url,
-    headers: req.headers,
-    body: req.body,
-    session: req.session,
-    ip: req.ip
-  };
-  console.log('LOG COMPLET:', JSON.stringify(logData, null, 2));
-  next();
-});
+// ============ MIDDLEWARE DE JOURNALISATION ============
+// Utiliser le middleware de logging pour toutes les requêtes
+app.use(requestLoggerMiddleware);
 
 // Servir les fichiers statiques
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Routes API
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
-app.use('/admin', adminRoutes); // Pas de protection sur les routes admin
+app.use('/admin', adminRoutes);
 app.use('/api/orders', orderRoutes);
 
 // Route par défaut
@@ -63,18 +59,31 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// Gestion des erreurs avec exposition complète
+// ============ MIDDLEWARE DE GESTION DES ERREURS ============
+// Middleware de logging des erreurs
+app.use(errorLoggerMiddleware);
+
+// Gestion des erreurs finale
 app.use((err, req, res, next) => {
-  console.error('Erreur complète:', err);
-  res.status(500).json({
-    error: err.message,
-    stack: err.stack,
-    details: err
-  });
+  const statusCode = err.statusCode || 500;
+  
+  // Ne pas exposer les détails en production
+  const response = {
+    success: false,
+    message: statusCode === 500 ? 'Erreur interne du serveur' : err.message,
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  };
+  
+  res.status(statusCode).json(response);
 });
 
+// ============ DÉMARRAGE DU SERVEUR ============
 app.listen(PORT, () => {
-  console.log(`Serveur démarré sur le port ${PORT}`);
+  logger.info(`🚀 Serveur démarré sur le port ${PORT}`, {
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
 });
 
 module.exports = app;
