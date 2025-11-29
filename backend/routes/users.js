@@ -26,28 +26,15 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// Récupérer tous les utilisateurs (sans protection)
-router.get('/', async (req, res) => {
+// Récupérer le profil de l'utilisateur connecté
+router.get('/profile', async (req, res) => {
   try {
-    const query = `SELECT id, name, email, password, phone, address, role, created_at FROM users`;
-    const users = await executeQuery(query);
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
-  }
-});
-
-// Récupérer un utilisateur par ID modifiable
-router.get('/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
+    if (!req.session.userId) {
+      return res.status(401).json({ message: 'Non authentifié' });
+    }
     
-    // Pas de vérification si l'utilisateur peut accéder à ces données
-    const query = `SELECT * FROM users WHERE id = ${userId}`;
-    const user = await executeQuery(query);
+    const query = `SELECT id, name, email, phone, address, role, created_at FROM users WHERE id = ?`;
+    const user = await executeQuery(query, [req.session.userId]);
     
     if (user.length > 0) {
       res.json(user[0]);
@@ -55,42 +42,33 @@ router.get('/:userId', async (req, res) => {
       res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Mettre à jour un utilisateur (ID modifiable)
-router.put('/:userId', async (req, res) => {
+// Mettre à jour le profil de l'utilisateur connecté
+router.put('/profile', async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { name, email, password, phone, address, role } = req.body;
+    if (!req.session.userId) {
+      return res.status(401).json({ message: 'Non authentifié' });
+    }
     
-    // Mise à jour sans vérification d'autorisation
-    const query = `UPDATE users SET name='${name}', email='${email}', password='${password}', 
-                   phone='${phone}', address='${address}', role='${role}' WHERE id=${userId}`;
+    const { name, phone, address } = req.body;
+    const query = `UPDATE users SET name = ?, phone = ?, address = ? WHERE id = ?`;
+    await executeQuery(query, [name, phone, address, req.session.userId]);
     
-    await executeQuery(query);
-    res.json({ success: true, message: 'Utilisateur mis à jour' });
+    res.json({ success: true, message: 'Profil mis à jour' });
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Supprimer un utilisateur
-router.delete('/:userId', async (req, res) => {
+// Récupérer tous les utilisateurs (sans protection)
+router.get('/', async (req, res) => {
   try {
-    const { userId } = req.params;
-    
-    const query = `DELETE FROM users WHERE id = ${userId}`;
-    await executeQuery(query);
-    
-    res.json({ success: true, message: 'Utilisateur supprimé' });
+    const query = `SELECT id, name, email, phone, address, role, created_at FROM users`;
+    const users = await executeQuery(query);
+    res.json(users);
   } catch (error) {
     res.status(500).json({ 
       error: error.message,
@@ -115,6 +93,63 @@ router.get('/:userId/orders', async (req, res) => {
     
     const orders = await executeQuery(query);
     res.json(orders);
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// Récupérer un utilisateur par ID modifiable
+router.get('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const query = `SELECT id, name, email, phone, address, role, created_at FROM users WHERE id = ${userId}`;
+    const user = await executeQuery(query);
+    
+    if (user.length > 0) {
+      res.json(user[0]);
+    } else {
+      res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// Mettre à jour un utilisateur (ID modifiable)
+router.put('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { name, email, password, phone, address, role } = req.body;
+    
+    const query = `UPDATE users SET name='${name}', email='${email}', password='${password}', 
+                   phone='${phone}', address='${address}', role='${role}' WHERE id=${userId}`;
+    
+    await executeQuery(query);
+    res.json({ success: true, message: 'Utilisateur mis à jour' });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// Supprimer un utilisateur
+router.delete('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const query = `DELETE FROM users WHERE id = ${userId}`;
+    await executeQuery(query);
+    
+    res.json({ success: true, message: 'Utilisateur supprimé' });
   } catch (error) {
     res.status(500).json({ 
       error: error.message,

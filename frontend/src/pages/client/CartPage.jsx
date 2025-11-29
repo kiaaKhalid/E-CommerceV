@@ -10,18 +10,14 @@ import {
   Divider,
   TextField,
   useTheme,
-  useMediaQuery,
   alpha,
   Breadcrumbs,
   Link,
-  Card,
-  CardMedia,
 } from '@mui/material';
 import {
   Add,
   Remove,
   Delete,
-  ShoppingCart,
   ArrowForward,
   LocalShipping,
   Security,
@@ -36,8 +32,7 @@ import { formatPrice, getImageUrl } from '../../utils/helpers';
 const CartPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { items, totalItems, totalPrice, updateQuantity, removeFromCart, isLoading } = useCart();
+  const { items, totalItems, totalPrice, updateQuantity, removeFromCart } = useCart();
   const { isAuthenticated } = useAuth();
   
   const [promoCode, setPromoCode] = useState('');

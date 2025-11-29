@@ -10,7 +10,7 @@ import { CartProvider } from './contexts/CartContext';
 // Layout
 import Layout from './components/layout/Layout';
 
-// Pages
+// Pages publiques
 import HomePage from './pages/public/HomePage';
 import ProductsPage from './pages/public/ProductsPage';
 import ProductDetailPage from './pages/public/ProductDetailPage';
@@ -18,6 +18,15 @@ import CategoriesPage from './pages/public/CategoriesPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import CartPage from './pages/client/CartPage';
+import WishlistPage from './pages/client/WishlistPage';
+
+// Pages Admin
+import AdminLayout from './pages/admin/AdminLayout';
+import DashboardPage from './pages/admin/DashboardPage';
+import AdminProductsPage from './pages/admin/ProductsPage';
+import AdminUsersPage from './pages/admin/UsersPage';
+import AdminOrdersPage from './pages/admin/OrdersPage';
+import AdminCategoriesPage from './pages/admin/CategoriesPage';
 
 // 🎨 Thème moderne et professionnel
 const theme = createTheme({
@@ -136,7 +145,6 @@ const theme = createTheme({
     '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
     '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
     '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-    '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -373,6 +381,7 @@ function App() {
         <CartProvider>
           <Router>
             <Routes>
+              {/* Routes publiques avec Layout client */}
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePage />} />
                 <Route path="login" element={<LoginPage />} />
@@ -381,11 +390,20 @@ function App() {
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="products/:id" element={<ProductDetailPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
-                <Route path="wishlist" element={<div>Wishlist Page</div>} />
+                <Route path="wishlist" element={<WishlistPage />} />
                 <Route path="profile" element={<div>Profile Page</div>} />
                 <Route path="orders" element={<div>Orders Page</div>} />
-                <Route path="admin/*" element={<div>Admin Pages</div>} />
                 <Route path="*" element={<div>404 - Page non trouvée</div>} />
+              </Route>
+
+              {/* Routes Admin avec Layout admin */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<DashboardPage />} />
+                <Route path="products" element={<AdminProductsPage />} />
+                <Route path="users" element={<AdminUsersPage />} />
+                <Route path="orders" element={<AdminOrdersPage />} />
+                <Route path="categories" element={<AdminCategoriesPage />} />
+                <Route path="settings" element={<div>Settings Page</div>} />
               </Route>
             </Routes>
           </Router>

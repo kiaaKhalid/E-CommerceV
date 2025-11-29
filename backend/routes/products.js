@@ -22,6 +22,177 @@ router.get('/categories/all', async (req, res) => {
   }
 });
 
+// Recherche de produits avec requête complexe
+router.get('/search/:term', async (req, res) => {
+  try {
+    const { term } = req.params;
+    
+    // Requête de recherche très lourde et vulnérable
+    const query = `
+      SELECT DISTINCT p.*, c.name as category_name,
+             (SELECT COUNT(*) FROM cart_items ci WHERE ci.product_id = p.id) as in_carts,
+             (SELECT COUNT(*) FROM wishlist w WHERE w.product_id = p.id) as in_wishlists,
+             (SELECT GROUP_CONCAT(r.comment) FROM reviews r WHERE r.product_id = p.id) as all_reviews
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN reviews rev ON p.id = rev.product_id
+      WHERE p.name LIKE '%${term}%' 
+         OR p.description LIKE '%${term}%'
+         OR c.name LIKE '%${term}%'
+         OR rev.comment LIKE '%${term}%'
+      ORDER BY p.price DESC
+    `;
+    
+    const results = await executeQuery(query);
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// ============ ROUTES PANIER (AVANT /:id) ============
+
+// Ajouter au panier
+router.post('/cart/add', async (req, res) => {
+  try {
+    const { productId, quantity, userId } = req.body;
+    
+    // Insertion directe sans vérification
+    const query = `INSERT INTO cart_items (user_id, product_id, quantity, created_at) 
+                   VALUES (${userId}, ${productId}, ${quantity}, NOW())
+                   ON DUPLICATE KEY UPDATE quantity = quantity + ${quantity}`;
+    
+    await executeQuery(query);
+    res.json({ success: true, message: 'Produit ajouté au panier' });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// Récupérer le panier d'un utilisateur
+router.get('/cart/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const query = `
+      SELECT ci.*, p.name, p.price, p.image_url, p.stock_quantity
+      FROM cart_items ci
+      JOIN products p ON ci.product_id = p.id
+      WHERE ci.user_id = ${userId}
+    `;
+    
+    const cartItems = await executeQuery(query);
+    res.json(cartItems);
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// Supprimer du panier
+router.delete('/cart/:cartId', async (req, res) => {
+  try {
+    const { cartId } = req.params;
+    
+    const query = `DELETE FROM cart_items WHERE id = ${cartId}`;
+    await executeQuery(query);
+    
+    res.json({ success: true, message: 'Produit retiré du panier' });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// Mettre à jour la quantité dans le panier
+router.put('/cart/:cartId', async (req, res) => {
+  try {
+    const { cartId } = req.params;
+    const { quantity } = req.body;
+    
+    const query = `UPDATE cart_items SET quantity = ${quantity} WHERE id = ${cartId}`;
+    await executeQuery(query);
+    
+    res.json({ success: true, message: 'Quantité mise à jour' });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// ============ ROUTES WISHLIST (AVANT /:id) ============
+
+// Ajouter à la wishlist
+router.post('/wishlist/add', async (req, res) => {
+  try {
+    const { productId, userId } = req.body;
+    
+    const query = `INSERT INTO wishlist (user_id, product_id, created_at) 
+                   VALUES (${userId}, ${productId}, NOW())`;
+    
+    await executeQuery(query);
+    res.json({ success: true, message: 'Produit ajouté à la wishlist' });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// Récupérer la wishlist
+router.get('/wishlist/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const query = `
+      SELECT w.*, p.name, p.price, p.image_url, p.description
+      FROM wishlist w
+      JOIN products p ON w.product_id = p.id
+      WHERE w.user_id = ${userId}
+    `;
+    
+    const wishlistItems = await executeQuery(query);
+    res.json(wishlistItems);
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// Supprimer de la wishlist
+router.delete('/wishlist/:wishlistId', async (req, res) => {
+  try {
+    const { wishlistId } = req.params;
+    
+    const query = `DELETE FROM wishlist WHERE id = ${wishlistId}`;
+    await executeQuery(query);
+    
+    res.json({ success: true, message: 'Produit retiré de la wishlist' });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// ============ ROUTES PRODUITS ============
+
 // Récupérer tous les produits avec requête lourde non optimisée
 router.get('/', async (req, res) => {
   try {
@@ -72,7 +243,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Récupérer un produit par ID vulnérable
+// Récupérer un produit par ID vulnérable (DOIT ÊTRE À LA FIN)
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -86,119 +257,6 @@ router.get('/:id', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Produit non trouvé' });
     }
-  } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
-  }
-});
-
-// Recherche de produits avec requête complexe
-router.get('/search/:term', async (req, res) => {
-  try {
-    const { term } = req.params;
-    
-    // Requête de recherche très lourde et vulnérable
-    const query = `
-      SELECT DISTINCT p.*, c.name as category_name,
-             (SELECT COUNT(*) FROM cart_items ci WHERE ci.product_id = p.id) as in_carts,
-             (SELECT COUNT(*) FROM wishlist w WHERE w.product_id = p.id) as in_wishlists,
-             (SELECT GROUP_CONCAT(r.comment) FROM reviews r WHERE r.product_id = p.id) as all_reviews
-      FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
-      LEFT JOIN reviews rev ON p.id = rev.product_id
-      WHERE p.name LIKE '%${term}%' 
-         OR p.description LIKE '%${term}%'
-         OR c.name LIKE '%${term}%'
-         OR rev.comment LIKE '%${term}%'
-      ORDER BY p.price DESC
-    `;
-    
-    const results = await executeQuery(query);
-    res.json(results);
-  } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
-  }
-});
-
-// Ajouter au panier
-router.post('/cart/add', async (req, res) => {
-  try {
-    const { productId, quantity, userId } = req.body;
-    
-    // Insertion directe sans vérification
-    const query = `INSERT INTO cart_items (user_id, product_id, quantity, created_at) 
-                   VALUES (${userId}, ${productId}, ${quantity}, NOW())
-                   ON DUPLICATE KEY UPDATE quantity = quantity + ${quantity}`;
-    
-    await executeQuery(query);
-    res.json({ success: true, message: 'Produit ajouté au panier' });
-  } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
-  }
-});
-
-// Récupérer le panier d'un utilisateur
-router.get('/cart/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    
-    const query = `
-      SELECT ci.*, p.name, p.price, p.image_url, p.stock_quantity
-      FROM cart_items ci
-      JOIN products p ON ci.product_id = p.id
-      WHERE ci.user_id = ${userId}
-    `;
-    
-    const cartItems = await executeQuery(query);
-    res.json(cartItems);
-  } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
-  }
-});
-
-// Ajouter à la wishlist
-router.post('/wishlist/add', async (req, res) => {
-  try {
-    const { productId, userId } = req.body;
-    
-    const query = `INSERT INTO wishlist (user_id, product_id, created_at) 
-                   VALUES (${userId}, ${productId}, NOW())`;
-    
-    await executeQuery(query);
-    res.json({ success: true, message: 'Produit ajouté à la wishlist' });
-  } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
-  }
-});
-
-// Récupérer la wishlist
-router.get('/wishlist/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    
-    const query = `
-      SELECT w.*, p.name, p.price, p.image_url, p.description
-      FROM wishlist w
-      JOIN products p ON w.product_id = p.id
-      WHERE w.user_id = ${userId}
-    `;
-    
-    const wishlistItems = await executeQuery(query);
-    res.json(wishlistItems);
   } catch (error) {
     res.status(500).json({ 
       error: error.message,

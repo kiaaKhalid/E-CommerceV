@@ -25,13 +25,9 @@ import {
   Apple,
   Store,
   ArrowForward,
-  Warning,
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-
-// 🎓 VERSION ÉDUCATIVE - VULNÉRABLE AUX INJECTIONS SQL
-// ⚠️ NE JAMAIS UTILISER EN PRODUCTION ⚠️
 
 const LoginPage = () => {
   const theme = useTheme();
@@ -42,7 +38,6 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState({});
-  const [educationalInfo, setEducationalInfo] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,14 +47,10 @@ const LoginPage = () => {
     }
   };
 
-  // 🎓 VALIDATION DÉSACTIVÉE POUR DÉMONSTRATION PÉDAGOGIQUE
   const validateForm = () => {
     const errors = {};
-    // ⚠️ Validation minimale - permet les injections SQL pour l'enseignement
     if (!formData.email) errors.email = 'L\'email est requis';
     if (!formData.password) errors.password = 'Le mot de passe est requis';
-    // ❌ SUPPRIMÉ: validation du format email pour permettre les injections
-    // else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email invalide';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -69,11 +60,6 @@ const LoginPage = () => {
     if (!validateForm()) return;
 
     const result = await login(formData);
-    
-    // 🎓 Afficher les informations éducatives si présentes
-    if (result.educational_analysis) {
-      setEducationalInfo(result.educational_analysis);
-    }
     
     if (result.success) {
       navigate('/');
@@ -88,32 +74,6 @@ const LoginPage = () => {
         backgroundColor: 'grey.50',
       }}
     >
-      {/* 🎓 BANNIÈRE ÉDUCATIVE */}
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 9999,
-          background: 'linear-gradient(90deg, #f44336 0%, #ff9800 100%)',
-          color: 'white',
-          py: 1,
-          px: 2,
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-        }}
-      >
-        <Warning />
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          🎓 VERSION ÉDUCATIVE - VULNÉRABLE AUX INJECTIONS SQL - COURS DE CYBERSÉCURITÉ
-        </Typography>
-        <Warning />
-      </Box>
-
       {/* Left Side - Branding (Desktop Only) */}
       {!isMobile && (
         <Box
@@ -125,7 +85,6 @@ const LoginPage = () => {
             justifyContent: 'center',
             alignItems: 'center',
             p: 6,
-            pt: 10,
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -159,43 +118,35 @@ const LoginPage = () => {
             </Box>
 
             <Typography variant="h2" sx={{ fontWeight: 800, mb: 2 }}>
-              🎓 Cours SQL
-              <br />Injection
+              ShopHub
             </Typography>
             <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400, mb: 4 }}>
-              Démonstration pédagogique des vulnérabilités d'injection SQL
+              Découvrez des milliers de produits de qualité à prix imbattables
             </Typography>
 
-            {/* Exemples d'injection */}
+            {/* Features */}
             <Box sx={{ 
               display: 'flex', 
               flexDirection: 'column', 
               gap: 1.5, 
               textAlign: 'left',
-              backgroundColor: 'rgba(0,0,0,0.2)',
+              backgroundColor: 'rgba(255,255,255,0.1)',
               borderRadius: 2,
-              p: 2,
+              p: 3,
             }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                💉 Exemples d'injections à tester :
-              </Typography>
               {[
-                "' OR '1'='1' --",
-                "admin@test.com' OR '1'='1' --",
-                "' OR 1=1 --",
-                "admin'--",
-              ].map((example, index) => (
+                "✓ Livraison gratuite dès 50€ d'achat",
+                "✓ Retours gratuits sous 30 jours",
+                "✓ Paiement 100% sécurisé",
+                "✓ Service client 7j/7",
+              ].map((feature, index) => (
                 <Box key={index} sx={{ 
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: 1,
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  borderRadius: 1,
-                  px: 1.5,
-                  py: 0.5,
                 }}>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                    {example}
+                  <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                    {feature}
                   </Typography>
                 </Box>
               ))}
@@ -212,7 +163,6 @@ const LoginPage = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           p: { xs: 3, md: 6 },
-          pt: { xs: 8, md: 10 },
         }}
       >
         <Box sx={{ maxWidth: 400, mx: 'auto', width: '100%' }}>
@@ -235,7 +185,7 @@ const LoginPage = () => {
                 <Store sx={{ color: 'white', fontSize: 32 }} />
               </Box>
               <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                🎓 Cours SQL Injection
+                ShopHub
               </Typography>
             </Box>
           )}
@@ -244,7 +194,7 @@ const LoginPage = () => {
             Connexion
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            🎓 Testez les injections SQL dans le champ email
+            Connectez-vous pour accéder à votre compte
           </Typography>
 
           {error && (
@@ -253,28 +203,8 @@ const LoginPage = () => {
             </Alert>
           )}
 
-          {/* 🎓 Affichage des informations éducatives */}
-          {educationalInfo && (
-            <Alert 
-              severity={educationalInfo.injection_detected ? "warning" : "info"} 
-              sx={{ mb: 3, borderRadius: 2 }}
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                🎓 Analyse Éducative:
-              </Typography>
-              <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                Injection détectée: {educationalInfo.injection_detected ? '✅ OUI' : '❌ NON'}
-              </Typography>
-              {educationalInfo.vulnerable_query && (
-                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', mt: 1 }}>
-                  Requête: {educationalInfo.vulnerable_query}
-                </Typography>
-              )}
-            </Alert>
-          )}
-
-          {/* Social Login - Désactivé pour la démo */}
-          <Box sx={{ display: 'flex', gap: 1.5, mb: 3, opacity: 0.5 }}>
+          {/* Social Login */}
+          <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
             {[
               { icon: <Google />, label: 'Google', color: '#DB4437' },
               { icon: <Facebook />, label: 'Facebook', color: '#4267B2' },
@@ -284,11 +214,14 @@ const LoginPage = () => {
                 key={social.label}
                 variant="outlined"
                 fullWidth
-                disabled
                 sx={{
                   py: 1.5,
                   borderColor: 'divider',
                   color: 'text.primary',
+                  '&:hover': {
+                    borderColor: social.color,
+                    backgroundColor: alpha(social.color, 0.04),
+                  },
                 }}
               >
                 {social.icon}
@@ -298,7 +231,7 @@ const LoginPage = () => {
 
           <Divider sx={{ mb: 3 }}>
             <Typography variant="caption" color="text.secondary">
-              💉 Testez les injections ci-dessous
+              ou connectez-vous avec votre email
             </Typography>
           </Divider>
 
@@ -306,42 +239,19 @@ const LoginPage = () => {
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="Email (💉 Injection ici)"
+              label="Email"
               name="email"
               type="text"
               value={formData.email}
               onChange={handleChange}
               error={!!formErrors.email}
-              helperText={formErrors.email || "Ex: admin@test.com' OR '1'='1' --"}
-              placeholder="' OR '1'='1' --"
-              sx={{ 
-                mb: 2.5,
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'rgba(255, 152, 0, 0.05)',
-                  '& fieldset': {
-                    borderColor: 'warning.main',
-                    borderWidth: 2,
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'warning.dark',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'warning.main',
-                  },
-                },
-                '& .MuiInputBase-input': {
-                  fontFamily: 'monospace',
-                  backgroundColor: 'transparent',
-                  '&:-webkit-autofill': {
-                    WebkitBoxShadow: '0 0 0 100px white inset',
-                    WebkitTextFillColor: 'inherit',
-                  },
-                },
-              }}
+              helperText={formErrors.email}
+              placeholder="votre@email.com"
+              sx={{ mb: 2.5 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Email sx={{ color: 'warning.main', fontSize: 20 }} />
+                    <Email sx={{ color: 'text.secondary', fontSize: 20 }} />
                   </InputAdornment>
                 ),
               }}
@@ -355,32 +265,8 @@ const LoginPage = () => {
               value={formData.password}
               onChange={handleChange}
               error={!!formErrors.password}
-              helperText={formErrors.password || "Entrez n'importe quoi"}
-              sx={{ 
-                mb: 1.5,
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'transparent',
-                  '& fieldset': {
-                    borderColor: 'divider',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'primary.main',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'primary.main',
-                  },
-                  '&.Mui-focused': {
-                    backgroundColor: 'transparent',
-                  },
-                },
-                '& .MuiInputBase-input': {
-                  backgroundColor: 'transparent',
-                  '&:-webkit-autofill': {
-                    WebkitBoxShadow: '0 0 0 100px white inset',
-                    WebkitTextFillColor: 'inherit',
-                  },
-                },
-              }}
+              helperText={formErrors.password}
+              sx={{ mb: 1.5 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -405,8 +291,12 @@ const LoginPage = () => {
               <Link
                 component={RouterLink}
                 to="/forgot-password"
-                underline="hover"
-                sx={{ fontSize: '0.875rem', fontWeight: 500 }}
+                variant="body2"
+                sx={{
+                  color: 'primary.main',
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
               >
                 Mot de passe oublié ?
               </Link>
@@ -414,64 +304,40 @@ const LoginPage = () => {
 
             <Button
               type="submit"
-              variant="contained"
               fullWidth
+              variant="contained"
               size="large"
               disabled={isLoading}
               endIcon={<ArrowForward />}
               sx={{
                 py: 1.5,
-                mb: 3,
+                borderRadius: 2,
+                textTransform: 'none',
                 fontSize: '1rem',
-                background: 'linear-gradient(90deg, #f44336 0%, #ff9800 100%)',
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                boxShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.39)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #5558E3 0%, #7C4FE0 100%)',
+                  boxShadow: '0 6px 20px 0 rgba(99, 102, 241, 0.5)',
+                },
               }}
             >
-              {isLoading ? 'Test en cours...' : '💉 Tester l\'injection'}
+              {isLoading ? 'Connexion...' : 'Se connecter'}
             </Button>
           </Box>
 
-          {/* Exemples rapides pour mobile */}
-          {isMobile && (
-            <Box sx={{ 
-              mt: 3, 
-              p: 2, 
-              backgroundColor: 'rgba(255, 152, 0, 0.1)', 
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'warning.main',
-            }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                💉 Injections à tester :
-              </Typography>
-              {[
-                "' OR '1'='1' --",
-                "admin@test.com' OR '1'='1' --",
-              ].map((example, index) => (
-                <Typography 
-                  key={index} 
-                  variant="body2" 
-                  sx={{ 
-                    fontFamily: 'monospace', 
-                    fontSize: '0.75rem',
-                    backgroundColor: 'white',
-                    p: 0.5,
-                    borderRadius: 0.5,
-                    mb: 0.5,
-                  }}
-                >
-                  {example}
-                </Typography>
-              ))}
-            </Box>
-          )}
-
-          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
             Pas encore de compte ?{' '}
             <Link
               component={RouterLink}
               to="/register"
-              underline="hover"
-              sx={{ fontWeight: 600 }}
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                textDecoration: 'none',
+                '&:hover': { textDecoration: 'underline' },
+              }}
             >
               Créer un compte
             </Link>

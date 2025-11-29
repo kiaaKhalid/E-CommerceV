@@ -59,6 +59,28 @@ router.get('/', async (req, res) => {
   }
 });
 
+// ============ ROUTES SPÉCIFIQUES (AVANT /:orderId) ============
+
+// Mettre à jour le statut d'une commande (route spécifique AVANT /:orderId)
+router.put('/:orderId/status', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    
+    const query = `UPDATE orders SET status = '${status}' WHERE id = ${orderId}`;
+    await executeQuery(query);
+    
+    res.json({ success: true, message: 'Statut de commande mis à jour' });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      sqlError: error.sql
+    });
+  }
+});
+
+// ============ ROUTES GÉNÉRIQUES (À LA FIN) ============
+
 // Récupérer une commande par ID
 router.get('/:orderId', async (req, res) => {
   try {
@@ -89,24 +111,6 @@ router.get('/:orderId', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Commande non trouvée' });
     }
-  } catch (error) {
-    res.status(500).json({ 
-      error: error.message,
-      sqlError: error.sql
-    });
-  }
-});
-
-// Mettre à jour le statut d'une commande
-router.put('/:orderId/status', async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { status } = req.body;
-    
-    const query = `UPDATE orders SET status = '${status}' WHERE id = ${orderId}`;
-    await executeQuery(query);
-    
-    res.json({ success: true, message: 'Statut de commande mis à jour' });
   } catch (error) {
     res.status(500).json({ 
       error: error.message,
