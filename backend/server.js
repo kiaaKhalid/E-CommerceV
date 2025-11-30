@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
 const path = require('path');
+// Supprimé: const client = require('prom-client'); - doublon inutile
 const { db } = require('./config/database');
 const { 
   logger, 
@@ -10,6 +11,7 @@ const {
   errorLoggerMiddleware,
   logSecurity 
 } = require('./config/logger');
+const { metricsMiddleware, getMetricsHandler, metrics } = require('./config/metrics');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const userRoutes = require('./routes/users');
@@ -18,6 +20,8 @@ const orderRoutes = require('./routes/orders');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Supprimé: client.collectDefaultMetrics(); - déjà fait dans metrics.js avec le bon préfixe
 
 // Middleware CORS
 app.use(cors({
@@ -39,9 +43,26 @@ app.use(session({
   }
 }));
 
+// ============ MIDDLEWARE DE MONITORING ============
+// Middleware Prometheus pour collecter les métriques
+app.use(metricsMiddleware);
+
 // ============ MIDDLEWARE DE JOURNALISATION ============
-// Utiliser le middleware de logging pour toutes les requêtes
 app.use(requestLoggerMiddleware);
+
+// ============ ROUTE MÉTRIQUES PROMETHEUS ============
+// Endpoint pour Prometheus (doit être avant les autres routes)
+app.get('/metrics', getMetricsHandler);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  });
+});
 
 // Servir les fichiers statiques
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -60,14 +81,15 @@ app.get('/', (req, res) => {
 });
 
 // ============ MIDDLEWARE DE GESTION DES ERREURS ============
-// Middleware de logging des erreurs
 app.use(errorLoggerMiddleware);
 
 // Gestion des erreurs finale
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   
-  // Ne pas exposer les détails en production
+  // Enregistrer l'erreur dans les métriques
+  metrics.recordError(err.name || 'UnknownError', req.path);
+  
   const response = {
     success: false,
     message: statusCode === 500 ? 'Erreur interne du serveur' : err.message,
@@ -84,6 +106,8 @@ app.listen(PORT, () => {
     environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString()
   });
+  logger.info(`📊 Métriques Prometheus disponibles sur http://localhost:${PORT}/metrics`);
+  logger.info(`💚 Health check disponible sur http://localhost:${PORT}/health`);
 });
 
 module.exports = app;

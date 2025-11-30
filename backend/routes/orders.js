@@ -1,6 +1,7 @@
 const express = require('express');
 const { executeQuery } = require('../config/database');
 const { logger, logDatabase, logApiError, logAudit, logTransaction } = require('../config/logger');
+const { metrics } = require('../config/metrics');
 const router = express.Router();
 
 // Créer une commande
@@ -31,6 +32,9 @@ router.post('/create', async (req, res) => {
     const clearCartQuery = `DELETE FROM cart_items WHERE user_id = ${userId}`;
     await executeQuery(clearCartQuery);
     logDatabase('DELETE', 'cart_items', { userId, reason: 'order_completed' });
+    
+    // 📊 Enregistrer les métriques de commande
+    metrics.recordOrder('pending', totalAmount);
     
     // Log de la transaction
     logTransaction('ORDER_CREATED', orderId, userId, totalAmount, 'pending', {

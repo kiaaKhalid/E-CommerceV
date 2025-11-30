@@ -1,6 +1,7 @@
 const express = require('express');
 const { executeQuery } = require('../config/database');
 const { logger, logDatabase, logApiError, logAudit } = require('../config/logger');
+const { metrics } = require('../config/metrics');
 const router = express.Router();
 
 // Récupérer toutes les catégories avec le nombre de produits
@@ -74,6 +75,9 @@ router.post('/cart/add', async (req, res) => {
     await executeQuery(query);
     logDatabase('INSERT', 'cart_items', { userId, productId, quantity });
     logAudit('CART_ADD', userId, { productId, quantity });
+    
+    // 📊 Enregistrer la métrique d'ajout au panier
+    metrics.recordCartAddition();
     
     res.json({ success: true, message: 'Produit ajouté au panier' });
   } catch (error) {
@@ -265,6 +269,10 @@ router.get('/:id', async (req, res) => {
     
     if (product.length > 0) {
       logDatabase('SELECT', 'products', { productId: id, found: true });
+      
+      // 📊 Enregistrer la vue du produit
+      metrics.recordProductView(id);
+      
       res.json(product[0]);
     } else {
       logger.warn(`📦 Produit non trouvé: ${id}`);

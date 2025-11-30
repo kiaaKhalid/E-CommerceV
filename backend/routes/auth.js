@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const { db } = require('../config/database');
 const { logger, logAudit, logSecurity, logApiError } = require('../config/logger');
+const { metrics } = require('../config/metrics');
 const router = express.Router();
 
 // Login route
@@ -28,6 +29,7 @@ router.post('/login', async (req, res) => {
     db.query(query, (error, results) => {
       if (error) {
         logApiError(error, req, { context: 'login' });
+        metrics.recordLogin(false);
         return res.status(500).json({
           success: false,
           message: 'Erreur de connexion. Veuillez réessayer.'
@@ -41,6 +43,9 @@ router.post('/login', async (req, res) => {
         req.session.userId = user.id;
         req.session.user = user;
         req.session.isAdmin = user.role === 'admin';
+        
+        // 📊 Enregistrer la métrique de connexion réussie
+        metrics.recordLogin(true);
         
         logAudit('USER_LOGIN_SUCCESS', user.id, { 
           email: user.email, 
@@ -62,6 +67,9 @@ router.post('/login', async (req, res) => {
         });
         
       } else {
+        // 📊 Enregistrer la métrique de connexion échouée
+        metrics.recordLogin(false);
+        
         logSecurity('LOGIN_FAILED', { 
           email, 
           ip: req.ip,
@@ -78,6 +86,7 @@ router.post('/login', async (req, res) => {
     
   } catch (error) {
     logApiError(error, req, { context: 'login' });
+    metrics.recordLogin(false);
     res.status(500).json({ 
       success: false,
       message: 'Erreur interne du serveur'
@@ -114,6 +123,9 @@ router.post('/register', async (req, res) => {
           message: 'Erreur lors de la création du compte'
         });
       }
+      
+      // 📊 Enregistrer la métrique d'inscription
+      metrics.recordRegistration();
       
       logAudit('USER_REGISTERED', result.insertId, { 
         email, 

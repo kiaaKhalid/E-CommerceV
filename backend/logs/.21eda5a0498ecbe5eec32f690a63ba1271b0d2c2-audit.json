@@ -9,6 +9,11 @@
             "date": 1764431589991,
             "name": "/Users/kiaakhalidgmail/Project/e-commercV/backend/logs/audit-2025-11-29.log",
             "hash": "fad64780359733b72ee40a6f55c179cef0e7b3f7a3c126c86e76d07ff79272c5"
+        },
+        {
+            "date": 1764498132319,
+            "name": "/Users/kiaakhalidgmail/Project/e-commercV/backend/logs/audit-2025-11-30.log",
+            "hash": "5f1ae69f0bc30dc36a4188c7ea653a6647306c1bf22101eea52fc6eb46126286"
         }
     ],
     "hashType": "sha256"
